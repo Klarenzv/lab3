@@ -741,12 +741,9 @@ if (! function_exists('validation_show_error')) {
         $config = config('Validation');
         $view   = Services::renderer();
 
-        $errors = array_filter(validation_errors(), static fn ($key) => preg_match(
-            '/^' . str_replace(['\.\*', '\*\.'], ['\..+', '.+\.'], preg_quote($field, '/')) . '$/',
-            $key
-        ), ARRAY_FILTER_USE_KEY);
+        $errors = validation_errors();
 
-        if ($errors === []) {
+        if (! array_key_exists($field, $errors)) {
             return '';
         }
 
@@ -754,7 +751,7 @@ if (! function_exists('validation_show_error')) {
             throw ValidationException::forInvalidTemplate($template);
         }
 
-        return $view->setVar('error', implode("\n", $errors))
+        return $view->setVar('error', $errors[$field])
             ->render($config->templates[$template]);
     }
 }

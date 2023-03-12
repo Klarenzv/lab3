@@ -123,7 +123,6 @@ class Database
     /**
      * Initialize database driver.
      *
-     * @param string       $driver   Driver name. FQCN can be used.
      * @param array|object $argument
      *
      * @return BaseConnection|BaseUtils|Forge

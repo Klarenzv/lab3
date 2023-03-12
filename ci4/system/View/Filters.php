@@ -171,8 +171,6 @@ class Filters
     {
         helper('number');
 
-        $fraction ??= 0;
-
         $options = [
             'type'     => NumberFormatter::CURRENCY,
             'currency' => $currency,

@@ -26,34 +26,17 @@ if (! function_exists('_get_uri')) {
      *
      * @internal Outside the framework this should not be used directly.
      *
-     * @param array|string $relativePath URI string or array of URI segments.
-     *                                   May include queries or fragments.
-     * @param App|null     $config       Alternative Config to use
+     * @param string $relativePath May include queries or fragments
      *
      * @throws HTTPException            For invalid paths.
      * @throws InvalidArgumentException For invalid config.
      */
-    function _get_uri($relativePath = '', ?App $config = null): URI
+    function _get_uri(string $relativePath = '', ?App $config = null): URI
     {
-        $appConfig = null;
-        if ($config === null) {
-            /** @var App $appConfig */
-            $appConfig = config('App');
+        $config ??= config('App');
 
-            if ($appConfig->baseURL === '') {
-                throw new InvalidArgumentException(
-                    '_get_uri() requires a valid baseURL.'
-                );
-            }
-        } elseif ($config->baseURL === '') {
-            throw new InvalidArgumentException(
-                '_get_uri() requires a valid baseURL.'
-            );
-        }
-
-        // Convert array of segments to a string
-        if (is_array($relativePath)) {
-            $relativePath = implode('/', $relativePath);
+        if ($config->baseURL === '') {
+            throw new InvalidArgumentException('_get_uri() requires a valid baseURL.');
         }
 
         // If a full URI was passed then convert it
@@ -70,31 +53,27 @@ if (! function_exists('_get_uri')) {
 
         $relativePath = URI::removeDotSegments($relativePath);
 
+        // Build the full URL based on $config and $relativePath
         $request = Services::request();
 
-        if ($config === null) {
-            $baseURL = $request instanceof CLIRequest
-                ? rtrim($appConfig->baseURL, '/ ') . '/'
-                // Use the current baseURL for multiple domain support
-                : $request->getUri()->getBaseURL();
-
-            $config = $appConfig;
-        } else {
-            $baseURL = rtrim($config->baseURL, '/ ') . '/';
-        }
+        /** @var App $config */
+        $url = $request instanceof CLIRequest
+            ? rtrim($config->baseURL, '/ ') . '/'
+            : $request->getUri()->getBaseURL();
 
         // Check for an index page
-        $indexPage = '';
         if ($config->indexPage !== '') {
-            $indexPage = $config->indexPage;
+            $url .= $config->indexPage;
 
             // Check if we need a separator
             if ($relativePath !== '' && $relativePath[0] !== '/' && $relativePath[0] !== '?') {
-                $indexPage .= '/';
+                $url .= '/';
             }
         }
 
-        $uri = new URI($baseURL . $indexPage . $relativePath);
+        $url .= $relativePath;
+
+        $uri = new URI($url);
 
         // Check if the baseURL scheme needs to be coerced into its secure version
         if ($config->forceGlobalSecureRequests && $uri->getScheme() === 'http') {
@@ -115,6 +94,11 @@ if (! function_exists('site_url')) {
      */
     function site_url($relativePath = '', ?string $scheme = null, ?App $config = null): string
     {
+        // Convert array of segments to a string
+        if (is_array($relativePath)) {
+            $relativePath = implode('/', $relativePath);
+        }
+
         $uri = _get_uri($relativePath, $config);
 
         return URI::createURIString(
@@ -137,47 +121,37 @@ if (! function_exists('base_url')) {
      */
     function base_url($relativePath = '', ?string $scheme = null): string
     {
-        /** @var App $config */
-        $config = clone config('App');
-
-        // Use the current baseURL for multiple domain support
-        $request         = Services::request();
-        $config->baseURL = $request instanceof CLIRequest
-            ? rtrim($config->baseURL, '/ ') . '/'
-            : $request->getUri()->getBaseURL();
-
+        $config            = clone config('App');
         $config->indexPage = '';
 
-        return site_url($relativePath, $scheme, $config);
+        return rtrim(site_url($relativePath, $scheme, $config), '/');
     }
 }
 
 if (! function_exists('current_url')) {
     /**
      * Returns the current full URL based on the Config\App settings and IncomingRequest.
+     * String returns ignore query and fragment parts.
      *
      * @param bool                 $returnObject True to return an object instead of a string
      * @param IncomingRequest|null $request      A request to use when retrieving the path
      *
-     * @return string|URI When returning string, the query and fragment parts are removed.
-     *                    When returning URI, the query and fragment parts are preserved.
+     * @return string|URI
      */
     function current_url(bool $returnObject = false, ?IncomingRequest $request = null)
     {
         $request ??= Services::request();
-        /** @var CLIRequest|IncomingRequest $request */
-        $routePath  = $request->getPath();
-        $currentURI = $request->getUri();
+        $path = $request->getPath();
 
         // Append queries and fragments
-        if ($query = $currentURI->getQuery()) {
-            $query = '?' . $query;
+        if ($query = $request->getUri()->getQuery()) {
+            $path .= '?' . $query;
         }
-        if ($fragment = $currentURI->getFragment()) {
-            $fragment = '#' . $fragment;
+        if ($fragment = $request->getUri()->getFragment()) {
+            $path .= '#' . $fragment;
         }
 
-        $uri = _get_uri($routePath . $query . $fragment);
+        $uri = _get_uri($path);
 
         return $returnObject ? $uri : URI::createURIString($uri->getScheme(), $uri->getAuthority(), $uri->getPath());
     }
@@ -209,14 +183,15 @@ if (! function_exists('uri_string')) {
     /**
      * URL String
      *
-     * Returns the path part (relative to baseURL) of the current URL
+     * Returns the path part of the current URL
+     *
+     * @param bool $relative Whether the resulting path should be relative to baseURL
      */
-    function uri_string(): string
+    function uri_string(bool $relative = false): string
     {
-        // The value of Services::request()->getUri()->getPath() is overridden
-        // by IncomingRequest constructor. If we use it here, the current tests
-        // in CurrentUrlTest will fail.
-        return ltrim(Services::request()->getPath(), '/');
+        return $relative
+            ? ltrim(Services::request()->getPath(), '/')
+            : Services::request()->getUri()->getPath();
     }
 }
 
@@ -568,15 +543,14 @@ if (! function_exists('mb_url_title')) {
 
 if (! function_exists('url_to')) {
     /**
-     * Get the full, absolute URL to a route name or controller method
+     * Get the full, absolute URL to a controller method
      * (with additional arguments)
      *
      * NOTE: This requires the controller/method to
      * have a route defined in the routes Config file.
      *
-     * @param string     $controller Route name or Controller::method
-     * @param int|string ...$args    One or more parameters to be passed to the route.
-     *                               The last parameter allows you to set the locale.
+     * @param string     $controller Named route or Controller::method
+     * @param int|string ...$args    One or more parameters to be passed to the route
      *
      * @throws RouterException
      */
@@ -609,7 +583,7 @@ if (! function_exists('url_is')) {
     {
         // Setup our regex to allow wildcards
         $path        = '/' . trim(str_replace('*', '(\S)*', $path), '/ ');
-        $currentPath = '/' . trim(uri_string(), '/ ');
+        $currentPath = '/' . trim(uri_string(true), '/ ');
 
         return (bool) preg_match("|^{$path}$|", $currentPath, $matches);
     }

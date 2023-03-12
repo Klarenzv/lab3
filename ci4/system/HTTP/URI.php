@@ -90,7 +90,7 @@ class URI
      *
      * Note: The constructor of the IncomingRequest class changes the path of
      *      the URI object held by the IncomingRequest class to a path relative
-     *      to the baseURL. If the baseURL contains subfolders, this value
+     *      to the SCRIPT_NAME. If the baseURL contains subfolders, this value
      *      will be different from the current URI path.
      *
      * @var string
@@ -148,9 +148,11 @@ class URI
     /**
      * Builds a representation of the string from the component parts.
      *
-     * @param string|null $scheme URI scheme. E.g., http, ftp
-     *
-     * @return string URI string with only passed parts. Maybe incomplete as a URI.
+     * @param string|null $scheme    URI scheme. E.g., http, ftp
+     * @param string      $authority
+     * @param string      $path
+     * @param string      $query
+     * @param string      $fragment
      */
     public static function createURIString(
         ?string $scheme = null,
@@ -1087,11 +1089,13 @@ class URI
         ), $query);
 
         $params = implode('&', $params);
-        parse_str($params, $result);
+        parse_str($params, $params);
 
-        foreach ($result as $key => $value) {
+        foreach ($params as $key => $value) {
             $return[hex2bin($key)] = $value;
         }
+
+        $query = $params = null;
 
         return $return;
     }

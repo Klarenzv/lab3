@@ -68,8 +68,6 @@ class Exceptions
      */
     protected $response;
 
-    private ?Throwable $exceptionCaughtByExceptionHandler = null;
-
     /**
      * @param CLIRequest|IncomingRequest $request
      */
@@ -115,8 +113,6 @@ class Exceptions
      */
     public function exceptionHandler(Throwable $exception)
     {
-        $this->exceptionCaughtByExceptionHandler = $exception;
-
         [$statusCode, $exitCode] = $this->determineCodes($exception);
 
         if ($this->config->log === true && ! in_array($statusCode, $this->config->ignoreCodes, true)) {
@@ -194,13 +190,6 @@ class Exceptions
         }
 
         ['type' => $type, 'message' => $message, 'file' => $file, 'line' => $line] = $error;
-
-        if ($this->exceptionCaughtByExceptionHandler) {
-            $message .= "\n【Previous Exception】\n"
-                . get_class($this->exceptionCaughtByExceptionHandler) . "\n"
-                . $this->exceptionCaughtByExceptionHandler->getMessage() . "\n"
-                . $this->exceptionCaughtByExceptionHandler->getTraceAsString();
-        }
 
         if (in_array($type, [E_ERROR, E_CORE_ERROR, E_COMPILE_ERROR, E_PARSE], true)) {
             $this->exceptionHandler(new ErrorException($message, 0, $type, $file, $line));
