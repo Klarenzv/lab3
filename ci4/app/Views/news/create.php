@@ -14,5 +14,13 @@
     <textarea name="body" cols="45" rows="4"><?= set_value('body') ?></textarea>
     <br>
 
+    <label for="title">Title</label>
+    <input type="input" name="title" value="<?= set_value('title') ?>">
+    <br>
+
+    <label for="title">Title</label>
+    <input type="input" name="title" value="<?= set_value('title') ?>">
+    <br>
+
     <input type="submit" name="submit" value="Create news item">
 </form>

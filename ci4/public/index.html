@@ -175,83 +175,132 @@ document.getElementById("demo4").innerHTML = "Today is " + day;
 
 <!-- MySQL Section -->
 <div class="java" id="mysql">
-    <h2 class="center" >Guest List</h2>
+    <h2 class="center" >MySQL</h2>
 
-  <?php
-// establish database connection
-$servername = "192.168.150.213";
-$username = "webprogss211";
-$password = "fancyR!ce36";
-$dbname = "webprogss211";
-$conn = mysqli_connect($servername, $username, $password, $dbname);
+<?php
+// define variables and set to empty values
+$nameErr = $emailErr = $genderErr = $websiteErr = "";
+$name = $email = $gender = $comment = $website = "";
 
-// check if connection failed
-if (!$conn) {
-    die("Connection failed: " . mysqli_connect_error());
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+  if (empty($_POST["name"])) {
+    $nameErr = "Name is required";
+  } else {
+    $name = test_input($_POST["name"]);
+    // check if name only contains letters and whitespace
+    if (!preg_match("/^[a-zA-Z-' ]*$/",$name)) {
+      $nameErr = "Only letters and white space allowed";
+    }
+  }
+  
+  if (empty($_POST["email"])) {
+    $emailErr = "Email is required";
+  } else {
+    $email = test_input($_POST["email"]);
+    // check if e-mail address is well-formed
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+      $emailErr = "Invalid email format";
+    }
+  }
+    
+  if (empty($_POST["website"])) {
+    $website = "";
+  } else {
+    $website = test_input($_POST["website"]);
+    // check if URL address syntax is valid (this regular expression also allows dashes in the URL)
+    if (!preg_match("/\b(?:(?:https?|ftp):\/\/|www\.)[-a-z0-9+&@#\/%?=~_|!:,.;]*[-a-z0-9+&@#\/%=~_|]/i",$website)) {
+      $websiteErr = "Invalid URL";
+    }
+  }
+
+  if (empty($_POST["comment"])) {
+    $comment = "";
+  } else {
+    $comment = test_input($_POST["comment"]);
+  }
+
+  if (empty($_POST["gender"])) {
+    $genderErr = "Gender is required";
+  } else {
+    $gender = test_input($_POST["gender"]);
+  }
 }
 
-// handle search query
-if (isset($_GET['search'])) {
-    $search = $_GET['search'];
-    $sql = "SELECT * FROM kavillanueva_myguests WHERE ANSname LIKE '%$search%' OR email LIKE '%$search%' OR ANSmessage LIKE '%$search%'";
-} else {
-    $sql = "SELECT * FROM kavillanueva_myguests";
+function test_input($data) {
+  $data = trim($data);
+  $data = stripslashes($data);
+  $data = htmlspecialchars($data);
+  return $data;
 }
-$result = mysqli_query($conn, $sql);
-
-// close database connection
-mysqli_close($conn);
 ?>
 
-<!DOCTYPE html>
-<html>
+<h2>PHP Form Validation Example</h2>
+<p><span class="error">* required field</span></p>
+<form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">  
+  Name: <input type="text" name="name" value="<?php echo $name;?>">
+  <span class="error">* <?php echo $nameErr;?></span>
+  <br><br>
+  E-mail: <input type="text" name="email" value="<?php echo $email;?>">
+  <span class="error">* <?php echo $emailErr;?></span>
+  <br><br>
+  Website: <input type="text" name="website" value="<?php echo $website;?>">
+  <span class="error"><?php echo $websiteErr;?></span>
+  <br><br>
+  Comment: <textarea name="comment" rows="5" cols="40"><?php echo $comment;?></textarea>
+  <br><br>
+  Gender:
+  <input type="radio" name="gender" <?php if (isset($gender) && $gender=="female") echo "checked";?> value="female">Female
+  <input type="radio" name="gender" <?php if (isset($gender) && $gender=="male") echo "checked";?> value="male">Male
+  <input type="radio" name="gender" <?php if (isset($gender) && $gender=="other") echo "checked";?> value="other">Other  
+  <span class="error">* <?php echo $genderErr;?></span>
+  <br><br>
+  <input type="submit" name="submit" value="Submit">  
+</form>
 
-<head>
-    <title>Guest List</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-</head>
-
-<body>
-    <div class="container-fluid py-5">
-        <div class="container">
-            <h1 class="display-2 text-uppercase text-center mb-5" style="-webkit-text-stroke: 2px #dee2e6;">Guest List</h1>
-            <form class="form-inline justify-content-center mb-3" method="get">
-                <div class="form-group">
-                    <input type="text" class="form-control" name="search" placeholder="Search...">
-                </div>
-                <button type="submit" class="btn btn-primary ml-2">Search</button>
-            </form>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Subject</th>
-                        <th>Message</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-                    if (mysqli_num_rows($result) > 0) {
-                        while ($row = mysqli_fetch_assoc($result)) {
-                            echo "<tr><td>" . $row["ANSname"] . "</td><td>" . $row["email"] . "</td><td>" . $row["ANSsubject"] . "</td><td>" . $row["ANSmessage"] . "</td><tr>";
-                        }
-                    } else {
-                        echo "<tr><td colspan='5' class='text-center'>No results found.</td></tr>";
-                    }
-                    ?>
-                </tbody>
-            </table>
-            <div class="text-center">
-                <a href="home.php" class="btn btn-primary">Back to Contact Form</a>
-            </div>
-        </div>
-    </div>
-</body>
-
-</html>
+<?php
+echo "<h2>Your Input:</h2>";
+echo $name;
+echo "<br>";
+echo $email;
+echo "<br>";
+echo $website;
+echo "<br>";
+echo $comment;
+echo "<br>";
+echo $gender;
+?>
 
 
+<?php
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+
+
+    $servername = "localhost";
+    $username = "webprogss211";
+    $password = "webprogss211";
+    $dbname = "webprogss211";
+
+    // Create connection
+    $conn = new mysqli($servername, $username, $password, $dbname);
+    // Check connection
+    if ($conn->connect_error) {
+        die("Connection failed: " . $conn->connect_error);
+    }
+
+    $sql = "INSERT INTO kavillanueva_myguests (firstname, lastname, email)
+    VALUES ('$name', '   ', '$email')";
+
+    if ($conn->query($sql) === TRUE) {
+      echo "New record created successfully";
+    } else {
+      echo "Error: " . $sql . "<br>" . $conn->error;
+    }
+
+    $conn->close();
+
+}
+?>
+</div>
 
 <!--Space per Sections-->
 <div class=space></div>
