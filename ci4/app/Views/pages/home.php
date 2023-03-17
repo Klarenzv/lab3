@@ -173,11 +173,11 @@ document.getElementById("demo4").innerHTML = "Today is " + day;
 <div class=space></div>
 <div class=space></div>
 
-<!-- MySQL Section -->
+<!-- Guest list Section -->
 <div class="java" id="mysql">
     <h2 class="center" >Guest List</h2>
 
-  <?php
+<?php
 // establish database connection
 $servername = "192.168.150.213";
 $username = "webprogss211";
@@ -208,7 +208,6 @@ mysqli_close($conn);
 
 <head>
     <title>Guest List</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
 </head>
 
 <body>
@@ -226,7 +225,7 @@ mysqli_close($conn);
                     <tr>
                         <th>Name</th>
                         <th>Email</th>
-                        <th>Subject</th>
+                        <th>Website</th>
                         <th>Message</th>
                     </tr>
                 </thead>
@@ -234,7 +233,7 @@ mysqli_close($conn);
                     <?php
                     if (mysqli_num_rows($result) > 0) {
                         while ($row = mysqli_fetch_assoc($result)) {
-                            echo "<tr><td>" . $row["ANSname"] . "</td><td>" . $row["email"] . "</td><td>" . $row["ANSsubject"] . "</td><td>" . $row["ANSmessage"] . "</td><tr>";
+                            echo "<tr><td>" . $row["ANSname"] . "</td><td>" . $row["email"] . "</td><td>" . $row["ANSemail"] . "</td><td>" . $row["ANSmessage"] . "</td><tr>";
                         }
                     } else {
                         echo "<tr><td colspan='5' class='text-center'>No results found.</td></tr>";
@@ -243,7 +242,7 @@ mysqli_close($conn);
                 </tbody>
             </table>
             <div class="text-center">
-                <a href="home.php" class="btn btn-primary">Back to Contact Form</a>
+                <a href="guest" class="btn btn-primary">Create Guest</a>
             </div>
         </div>
     </div>
