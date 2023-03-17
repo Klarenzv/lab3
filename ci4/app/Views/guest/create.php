@@ -1,7 +1,7 @@
 <?= session()->getFlashdata('error') ?>
 <?= validation_list_errors() ?>
 
-<form action="<?= base_url() . "/guests/create" ?>" method="post">
+<form action="<?= base_url() . "/guest/create" ?>" method="post">
   <?= csrf_field() ?>
 
   <?php
