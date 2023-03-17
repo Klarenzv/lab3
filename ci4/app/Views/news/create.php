@@ -1,26 +1,42 @@
-<h2><?= esc($title) ?></h2>
-
 <?= session()->getFlashdata('error') ?>
 <?= validation_list_errors() ?>
 
-<form action="/news/create" method="post">
-    <?= csrf_field() ?>
+<form action="<?= base_url() . "/guests/create" ?>" method="post">
+  <?= csrf_field() ?>
 
-    <label for="title">Name</label>
-    <input type="input" name="name" value="<?= set_value('name') ?>">
-    <br>
+  <?php
+  $field_names = ["name", "email", "website"];
+  foreach ($field_names as $field_name) :
+  ?>
+    <?= form_label(ucfirst($field_name), $field_name) ?>
+    <br />
+    <?= form_input($field_name, set_value($field_name), [
+      "placeholder" => "Your " . $field_name . "...",
+    ]) ?>
+    <br />
+    <br />
+  <?php endforeach?>
 
-    <label for="title">Email</label>
-    <input type="input" name="email" value="<?= set_value('email') ?>">
-    <br>
+  <?= form_label("Comment", "comment") ?>
+  <br />
+  <?= form_textarea("comment", set_value("comment"), [
+    "cols" => "45",
+    "rows" => "4",
+    "placeholder" => "Comments...",
+  ])?>
+  <br />
+  <br />
 
-    <label for="body">Website</label>
-    <input type="input" name="website" value="<?= set_value('website') ?>">
-    <br>
+  <?= form_label("Gender", "gender") ?>
+  <br />
+  <?php $genders = ["female", "male", "other"];
+  foreach($genders as $gender) :
+  ?>
+    <?= form_radio("gender", $gender, set_value("gender") == $gender) ?>
+    <?= ucfirst($gender) ?>
+    <br />
+  <?php endforeach?>
+  <br />
 
-    <label for="body">Message</label>
-    <textarea name="message" cols="40" rows="3"><?= set_value('message') ?></textarea>
-    <br>
-
-    <input type="submit" name="submit" value="Create Guest">
+  <input type="submit" name="submit" value="ADD GUEST">
 </form>
