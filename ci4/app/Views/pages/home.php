@@ -242,7 +242,7 @@ mysqli_close($conn);
                 </tbody>
             </table>
             <div class="text-center">
-                <a href="guest/create" class="btn btn-primary">Create Guest</a>
+                <a href="guests/create" class="btn btn-primary">Create Guest</a>
             </div>
         </div>
     </div>
