@@ -4,7 +4,6 @@
 
     <?php foreach ($news as $news_item): ?>
 
-        <h3><?= ['title'] ?></h3>
 
         <div class="main">
             <?= esc($news_item['body']) ?>
