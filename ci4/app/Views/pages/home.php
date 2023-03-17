@@ -22,7 +22,7 @@
         <a href="#introduction">Introduction</a>
         <a href="#javascript">JavaScript</a>
         <a href="#php">PHP</a>
-        <a href="#mysql">MySQL</a>
+        <a href="#guests">Guests</a>
         <a href="#reference">Reference</a>
         
       </li>
@@ -174,7 +174,7 @@ document.getElementById("demo4").innerHTML = "Today is " + day;
 <div class=space></div>
 
 <!-- Guest list Section -->
-<div class="java" id="mysql">
+<div class="java" id="guests">
     <h2 class="center" >Guest List</h2>
 
 <?php
