@@ -1,4 +1,3 @@
-<h2><?= esc($title) ?></h2>
 
 <?php if (! empty($news) && is_array($news)): ?>
 

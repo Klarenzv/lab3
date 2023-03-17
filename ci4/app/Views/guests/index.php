@@ -1,4 +1,3 @@
-<p>Can't find your name? <?= anchor("guests/create", "Register here!") ?></p>
 <?php if (!empty($guests) && is_array($guests)) : ?>
 
   <?php foreach ($guests as $guest) : ?>
@@ -7,7 +6,7 @@
 
     <p><?= esc($guest['comment']) ?></p>
 
-    <?= anchor("guests/" . esc($guest['id'], 'url'), "View guest details") ?>
+    <?= anchor("lab3/ci4/public/guests/" . esc($guest['id'], 'url'), "View guest details") ?>
 
   <?php endforeach ?>
   </ul>
